@@ -7,7 +7,7 @@ use Warewulf::Provision::DhcpFactory;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(get_all_nodes nodes_by_cluster);
+@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes);
 
 # get_all_nodes
 #   Return full hash of all nodes provisioned by Warewulf.
@@ -18,6 +18,24 @@ sub get_all_nodes {
     my $nodeSet = $db->get_objects('node','_id',());
     my %nodes = nodes_hash($nodeSet);
     return %nodes;
+}
+
+# get_nodes
+#   Using a given lookup, return all nodes with that parameter.
+sub get_nodes {
+    my $lookup = shift;
+    my $ref = shift;
+    my @ident;
+    if (ref($ref) eq 'ARRAY') {
+        @ident = @{$ref};
+        print "array = $ident[0]\n";
+    } else {
+        push(@ident,$ref);
+    }
+    my $db = Warewulf::DataStore->new();
+    my $nodeSet = $db->get_objects('node',$lookup,@ident);
+    print "Count = " . $nodeSet->count() . "\n";
+    return nodes_hash($nodeSet);
 }
 
 # nodes_by_cluster
