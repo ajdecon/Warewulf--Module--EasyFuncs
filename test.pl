@@ -1,7 +1,7 @@
 
 use Dancer;
 use Dancer::Plugin::REST;
-use Node qw(get_all_nodes nodes_by_cluster get_nodes);
+use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties);
 use Vnfs qw(get_all_vnfs);
 use Util qw(get_id_by_name);
 
@@ -24,10 +24,16 @@ get '/cluster' => sub {
     return { "nodes" => \%nodelist };
 };
 
-get '/specnodes' => sub {
-    my @nodes = ("wd0031","wd0032","wd0033");
+get '/specnode/:name' => sub {
+    my $name = params->{name};
+    my @nodes = ("$name");
     #my @nodes = ("wd0031");
     my %nodelist = get_nodes("name",\@nodes);
+    return { "nodes" => \%nodelist };
+};
+
+get '/test' => sub {
+    my %nodelist = set_node_properties("name",("wd0031","wd0032"),{ "cluster" => "helloworld" });
     return { "nodes" => \%nodelist };
 };
 

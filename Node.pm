@@ -7,7 +7,7 @@ use Warewulf::Provision::DhcpFactory;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes);
+@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties);
 
 # get_all_nodes
 #   Return full hash of all nodes provisioned by Warewulf.
@@ -28,13 +28,13 @@ sub get_nodes {
     my @ident;
     if (ref($ref) eq 'ARRAY') {
         @ident = @{$ref};
-        print "array = $ident[0]\n";
+    #    print "array = $ident[0]\n";
     } else {
         push(@ident,$ref);
     }
     my $db = Warewulf::DataStore->new();
     my $nodeSet = $db->get_objects('node',$lookup,@ident);
-    print "Count = " . $nodeSet->count() . "\n";
+    #print "Count = " . $nodeSet->count() . "\n";
     return nodes_hash($nodeSet);
 }
 
@@ -48,6 +48,41 @@ sub nodes_by_cluster {
     my $db = Warewulf::DataStore->new();
     my $nodeSet = $db->get_objects('node','cluster',($cluster));
     return nodes_hash($nodeSet);
+}
+
+# set_node_properties
+#   ($lookup, @ident, %properties)
+sub set_node_properties {
+    my $lookup = shift;
+    print "lookup = $lookup \n";
+
+    my $i = shift;
+    my @ident;
+    print "type = " . ref($i) . "\n";
+    if (ref($i) eq 'ARRAY') {
+        @ident = @{$i};
+        print "array = $ident[0]\n";
+    } else {
+        push(@ident,$ref);
+        print "ref = $ref \n";
+    }
+
+    my $p = shift;
+    print "prop type = " . ref($p) . "\n";
+    my %properties = %{$p};
+
+    my $db = Warewulf::DataStore->new();
+    my $nodeSet = $db->get_objects('node',$lookup,@ident);
+    foreach my $n ($nodeSet->get_list()) {
+        foreach my $param (keys %properties) {
+            $n->set($param,$properties{$param});
+        }
+    }
+
+    $db->persist($nodeSet);
+
+    return nodes_hash($nodeSet);
+
 }
 
 # nodes_hash
