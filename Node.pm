@@ -1,0 +1,57 @@
+package Node;
+
+use Warewulf::DataStore;
+use Warewulf::Provision::Pxelinux;
+use Warewulf::Provision::HostsFile;
+use Warewulf::Provision::DhcpFactory;
+
+require Exporter;
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(get_all_nodes nodes_by_cluster);
+
+# get_all_nodes
+#   Return full hash of all nodes provisioned by Warewulf.
+#   Return nodeid, node name, ip/netmask of eth0,
+#   cluster, hwaddr, vnfsid, bootstrapid, fileids.
+sub get_all_nodes {
+    my $db = Warewulf::DataStore->new();
+    my $nodeSet = $db->get_objects('node','_id',());
+    my %nodes = nodes_hash($nodeSet);
+    return %nodes;
+}
+
+# nodes_by_cluster
+#   Return node hash of nodes in a given cluster.
+sub nodes_by_cluster {
+    my $cluster = shift;
+    if ($cluster eq "UNDEF") {
+        $cluster = undef;
+    }
+    my $db = Warewulf::DataStore->new();
+    my $nodeSet = $db->get_objects('node','cluster',($cluster));
+    return nodes_hash($nodeSet);
+}
+
+# nodes_hash
+#   Return hash of node details from object set.
+sub nodes_hash {
+    my $nodeSet = shift;
+    my %nodes;
+    foreach my $node ($nodeSet->get_list()) {
+        my $id = $node->get('name');
+        $nodes{$id}{'id'} = $node->get('_id');
+        $nodes{$id}{'name'} = $node->get('name');
+        $nodes{$id}{'vnfsid'} = $node->get('vnfsid');
+        $nodes{$id}{'bootstrapid'} = $node->get('bootstrapid');
+        $nodes{$id}{'cluster'} = $node->get('cluster');
+        $nodes{$id}{'fileids'} = $node->get('fileids') ;
+        
+        foreach my $netdev ($node->get('netdevs')) {
+            $nodes{$id}{'netdevs'}{$netdev->get('name')} = { 'ipaddr' => 
+                $netdev->get('ipaddr'), 'netmask' => $netdev->get('netmask'), 
+                'hwaddr' => $netdev->get('hwaddr') };
+        }
+
+    }
+    return %nodes;
+}
