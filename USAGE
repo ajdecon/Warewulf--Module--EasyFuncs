@@ -1,0 +1,55 @@
+Warewulf::Module::EasyFuncs::Node
+
+get_all_nodes(): 
+    Return a hash containing the details of all nodes provisioned by Warewulf,
+    indexed by nodeid.
+
+    Example: %nodes = get_all_nodes()
+
+get_nodes($lookup,\@nodes):
+    Return a hash containing the details of specified nodes/
+    $lookup     - "_id", "name", or whatever
+    \@nodes     - array ref to list of lookup keys
+
+nodes_by_cluster($cluster):
+    Return a hash of all nodes with a given CLUSTER value.
+    $cluster    - Name of cluster to query.
+
+set_node_properties(\%nodehash):
+    Set node properties, indexed by nodeid.
+    \%nodehash  - hashref to data structure.
+
+    Example:
+        my %nodehash;
+        $nodehash{'18'}{'cluster'} = 'bio';
+        $nodehash{'18'}{'vnfsid'} = '32';
+        $nodehash{'12'}{'cluster'} = 'hadoop';
+        $nodehash{'12'}{'netdevs'}{'eth0'}{'ipaddr'} = '10.6.1.1';
+
+poweroff_nodes
+poweron_nodes
+reboot_nodes($lookup,\@nodes):
+    Carry out IPMI power action against the specified nodes.
+    $lookup     - "_id", "name", or whatever
+    \@nodes     - array ref to list of lookup keys
+
+
+
+Warewulf::Module::EasyFuncs::Vnfs
+
+get_all_vnfs(): 
+    Return list of all VNFS images in the datastore, indexed by
+    vnfsid.
+
+Warewulf::Module::EasyFuncs::Util
+
+get_name_by_id($type,$id):
+    Return name of a given object, given its id.
+    $type       - "vnfs", "node", "bootstrap", etc.
+    $id         - object id in datastore
+
+get_id_by_name($type,$id):
+    Return id of a given object, given its name.
+    $type       - "vnfs", "node", "bootstrap", etc.
+    $name       - object name
+

@@ -56,7 +56,7 @@ sub nodes_by_cluster {
 #   Sets node properties according to a passed hash.
 #   ($lookup, \%nodehash)
 sub set_node_properties {
-    my $lookup = shift;
+#    my $lookup = shift;
     my $p = shift;
     my %props = %{$p};
 

@@ -38,7 +38,7 @@ get '/test' => sub {
     $props{'14'}{'netdevs'}{'eth0'}{'ipaddr'} = '10.8.47.1';
     #my @fids = (14,15,16);
     #$props{'15'}{'fileids'} = \@fids;
-    my %result = set_node_properties("name", \%props);
+    my %result = set_node_properties(\%props);
     return { "nodes" => \%result, "propinput" => \%props };
 };
 get '/on' => sub {
