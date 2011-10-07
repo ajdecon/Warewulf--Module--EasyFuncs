@@ -1,4 +1,4 @@
-package Node;
+package Warewulf::Module::EasyFuncs::Node;
 
 use Warewulf::DataStore;
 use Warewulf::Provision::Pxelinux;

@@ -1,9 +1,9 @@
 
 use Dancer;
 use Dancer::Plugin::REST;
-use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes poweron_nodes poweroff_nodes);
-use Vnfs qw(get_all_vnfs);
-use Util qw(get_id_by_name);
+use Warewulf::Module::EasyFuncs::Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes poweron_nodes poweroff_nodes);
+use Warewulf::Module::EasyFuncs::Vnfs qw(get_all_vnfs);
+use Warewulf::Module::EasyFuncs::Util qw(get_id_by_name);
 
 set serializer => 'mutable';
 set show_errors => 1;

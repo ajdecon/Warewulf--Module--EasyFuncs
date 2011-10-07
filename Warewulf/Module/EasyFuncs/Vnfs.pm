@@ -1,4 +1,4 @@
-package Vnfs;
+package Warewulf::Module::EasyFuncs::Vnfs;
 
 use Warewulf::DataStore;
 

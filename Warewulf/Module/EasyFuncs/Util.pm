@@ -1,4 +1,4 @@
-package Util;
+package Warewulf::Module::EasyFuncs::Util;
 
 use Warewulf::DataStore;
 
