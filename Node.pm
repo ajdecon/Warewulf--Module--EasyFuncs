@@ -8,7 +8,7 @@ use Warewulf::ParallelCmd;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties);
+@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes);
 
 # get_all_nodes
 #   Return full hash of all nodes provisioned by Warewulf.

@@ -1,7 +1,7 @@
 
 use Dancer;
 use Dancer::Plugin::REST;
-use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties);
+use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes);
 use Vnfs qw(get_all_vnfs);
 use Util qw(get_id_by_name);
 
@@ -41,6 +41,12 @@ get '/test' => sub {
     #$props{'15'}{'fileids'} = \@fids;
     my %result = set_node_properties("name", \%props);
     return { "nodes" => \%result, "propinput" => \%props };
+};
+
+get '/reboot' => sub {
+    my @nodelist = ("wd0031","wd0032","wd0033");
+    my %result = reboot_nodes("name",\@nodelist);
+    return { "result" => \%result };
 };
 
 get '/id/:type/:name' => sub {
