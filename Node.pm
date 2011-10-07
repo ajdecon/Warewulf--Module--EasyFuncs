@@ -18,6 +18,7 @@ sub get_all_nodes {
     my $db = Warewulf::DataStore->new();
     my $nodeSet = $db->get_objects('node','_id',());
     my %nodes = nodes_hash($nodeSet);
+    #my %nodes = nodes_hash2($nodeSet);
     return %nodes;
 }
 
@@ -145,6 +146,7 @@ sub nodes_hash {
         $nodes{$id}{'cluster'} = $node->get('cluster');
         $nodes{$id}{'domain'} = $node->get('domain');
         $nodes{$id}{'fqdn'} = $node->get('fqdn');
+        $nodes{$id}{'kargs'} = $node->get('kargs');
         $nodes{$id}{'fileids'} = $node->get('fileids') ;
 
         $nodes{$id}{'filesystems'} = $node->get('filesystems');
@@ -167,3 +169,15 @@ sub nodes_hash {
     }
     return %nodes;
 }
+
+sub nodes_hash2 {
+    my $nodeSet = shift;
+    my %result;
+    foreach my $node ($nodeSet->get_list()) {
+        my $id = $node->get('_id');
+        $result{$id} = $node->get_hash();
+    }
+    return %result;
+}
+
+

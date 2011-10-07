@@ -7,7 +7,7 @@ use Util qw(get_id_by_name);
 
 set serializer => 'mutable';
 set show_errors => 1;
-
+set allow_blessed => 1;
 
 get '/listnodes' => sub {
     my %nodelist = get_all_nodes();
