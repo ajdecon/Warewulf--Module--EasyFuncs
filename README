@@ -1,0 +1,5 @@
+Warewulf::Module::EasyFuncs
+
+A loose collection of convenience functions for interfacing with the Warewulf API.
+Mostly because I was getting tired of repeating certain patterns, and Warewulf isn't
+in enough of a functional style for my tastes. :)
