@@ -4,6 +4,7 @@ use Warewulf::DataStore;
 use Warewulf::Provision::Pxelinux;
 use Warewulf::Provision::HostsFile;
 use Warewulf::Provision::DhcpFactory;
+use Warewulf::ParallelCmd;
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -51,38 +52,83 @@ sub nodes_by_cluster {
 }
 
 # set_node_properties
-#   ($lookup, @ident, %properties)
+#   Sets node properties according to a passed hash.
+#   ($lookup, \%nodehash)
 sub set_node_properties {
     my $lookup = shift;
-    print "lookup = $lookup \n";
-
-    my $i = shift;
-    my @ident;
-    print "type = " . ref($i) . "\n";
-    if (ref($i) eq 'ARRAY') {
-        @ident = @{$i};
-        print "array = $ident[0]\n";
-    } else {
-        push(@ident,$ref);
-        print "ref = $ref \n";
-    }
-
     my $p = shift;
-    print "prop type = " . ref($p) . "\n";
-    my %properties = %{$p};
+    my %props = %{$p};
 
     my $db = Warewulf::DataStore->new();
-    my $nodeSet = $db->get_objects('node',$lookup,@ident);
-    foreach my $n ($nodeSet->get_list()) {
-        foreach my $param (keys %properties) {
-            $n->set($param,$properties{$param});
-        }
-    }
+    my @idlist;
 
-    $db->persist($nodeSet);
+    foreach my $id (keys %props) {
+        push(@idlist,$id);
+        my $node = ( ($db->get_objects('node','_id',($id)))->get_list() )[0];
+        my @netdevs = $node->get('netdevs');
+#        print "Nodeid $id found node with name " . $node->get('name') . " \n";
+        foreach my $p (keys %{ $props{$id} } ) {
+            print "Nodeid $id Prop $p = $props{$id}{$p} \n";
+            if ($p eq 'netdevs') {
+                foreach my $nd (@netdevs) {
+                    if ($props{$id}{$p}{$nd->get('name')}) {
+                        foreach my $ndparam ( keys %{ $props{$id}{$p}{$nd->get('name')} } ) {
+#                            print "I have $ndparam of " . $nd->get('name') . " being set to " . $props{$id}{$p}{$nd->get('name')}{$ndparam} . "\n";
+                            $nd->set($ndparam, $props{$id}{$p}{$nd->get('name')}{$ndparam});
+                        }
+                    }
+                }
+            } elsif ($p eq 'fileids') {
+                my @fids = @{ $props{$id}{$p} };
+                $node->set('fileids',@fids);
+            } else {
+                $node->set($p,$props{$id}{$p});
+            }
+        }
+        $db->persist($node);
+    }
+    
+    my $pxe = Warewulf::Provision::Pxelinux->new();
+    my $dhcp = Warewulf::Provision::DhcpFactory->new();
+    my $hostsfile = Warewulf::Provision::HostsFile->new();
+    my $nodeSet = $db->get_objects('node','_id',@idlist);
+    
+    $dhcp->persist();
+    $hostsfile->update_datastore();
+    $pxe->update($nodeSet);
 
     return nodes_hash($nodeSet);
+}
 
+# reboot_nodes
+#   ($lookup, @ident)
+sub reboot_nodes {
+    my $lookup = shift;
+    my $ref = shift;
+    my @ident;
+    if (ref($ref) eq 'ARRAY') {
+        @ident = @{$ref};
+    } else {
+        push(@ident,$ref);
+    }
+
+    my %results;
+    my $db = Warewulf::DataStore->new();
+    my $nodeSet = $db->get_objects('node',$lookup,@ident);
+    my $cmd = Warewulf::ParallelCmd->new();
+    $cmd->fanout(4);
+    foreach my $o ($nodeSet->get_list()) {
+        if (my $ipaddr = $o->get("ipmi_ipaddr") and my $username = $o->get("ipmi_username") and my $password = $o->get("ipmi_password")) {
+            $cmd->queue("ipmitool -I lan -U $username -P $password -H $ipaddr chassis power on");
+            $cmd->queue("ipmitool -I lan -U $username -P $password -H $ipaddr chassis power cycle");
+            $results{$o->get('_id')}{"status"} = "IPMI on/cycle sent";
+        } else {
+            $results{$o->get('_id')}{'status'} = "error";
+            $results{$o->get('_id')}{'error'} = "Some ipmi variables not set"
+        }
+    }
+    $cmd->run();
+    return %results;
 }
 
 # nodes_hash
@@ -91,13 +137,14 @@ sub nodes_hash {
     my $nodeSet = shift;
     my %nodes;
     foreach my $node ($nodeSet->get_list()) {
-        my $id = $node->get('name');
-        $nodes{$id}{'id'} = $node->get('_id');
+        my $id = $node->get('_id');
+        $nodes{$id}{'_id'} = $node->get('_id');
         $nodes{$id}{'name'} = $node->get('name');
         $nodes{$id}{'vnfsid'} = $node->get('vnfsid');
         $nodes{$id}{'bootstrapid'} = $node->get('bootstrapid');
         $nodes{$id}{'cluster'} = $node->get('cluster');
         $nodes{$id}{'fileids'} = $node->get('fileids') ;
+        $nodes{$id}{'user'} = $node->get('user');
         
         foreach my $netdev ($node->get('netdevs')) {
             $nodes{$id}{'netdevs'}{$netdev->get('name')} = { 'ipaddr' => 

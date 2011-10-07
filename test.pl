@@ -33,8 +33,14 @@ get '/specnode/:name' => sub {
 };
 
 get '/test' => sub {
-    my %nodelist = set_node_properties("name",("wd0031","wd0032"),{ "cluster" => "helloworld" });
-    return { "nodes" => \%nodelist };
+    my %props;
+    $props{'14'}{'cluster'} = 'testagain';
+    $props{'15'}{'cluster'} = 'yetagain';
+    $props{'14'}{'netdevs'}{'eth0'}{'ipaddr'} = '10.8.47.1';
+    #my @fids = (14,15,16);
+    #$props{'15'}{'fileids'} = \@fids;
+    my %result = set_node_properties("name", \%props);
+    return { "nodes" => \%result, "propinput" => \%props };
 };
 
 get '/id/:type/:name' => sub {
