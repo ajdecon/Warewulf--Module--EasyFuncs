@@ -143,8 +143,20 @@ sub nodes_hash {
         $nodes{$id}{'vnfsid'} = $node->get('vnfsid');
         $nodes{$id}{'bootstrapid'} = $node->get('bootstrapid');
         $nodes{$id}{'cluster'} = $node->get('cluster');
+        $nodes{$id}{'domain'} = $node->get('domain');
+        $nodes{$id}{'fqdn'} = $node->get('fqdn');
         $nodes{$id}{'fileids'} = $node->get('fileids') ;
-        $nodes{$id}{'user'} = $node->get('user');
+
+        $nodes{$id}{'filesystems'} = $node->get('filesystems');
+        $nodes{$id}{'diskformat'} = $node->get('diskformat');
+        $nodes{$id}{'diskpartition'} = $node->get('diskpartition');
+        $nodes{$id}{'bootloader'} = $node->get('bootloader');
+        $nodes{$id}{'bootlocal'} = $node->get('bootlocal');
+
+        $nodes{$id}{'ipmi_username'} = $node->get('ipmi_username');
+        $nodes{$id}{'ipmi_password'} = $node->get('ipmi_password');
+        $nodes{$id}{'ipmi_ipaddr'} = $node->get('ipmi_ipaddr');
+        $nodes{$id}{'ipmi_netmask'} = $node->get('ipmi_netmask');
         
         foreach my $netdev ($node->get('netdevs')) {
             $nodes{$id}{'netdevs'}{$netdev->get('name')} = { 'ipaddr' => 
