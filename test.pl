@@ -1,13 +1,12 @@
 
 use Dancer;
 use Dancer::Plugin::REST;
-use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes);
+use Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes poweron_nodes poweroff_nodes);
 use Vnfs qw(get_all_vnfs);
 use Util qw(get_id_by_name);
 
 set serializer => 'mutable';
 set show_errors => 1;
-set allow_blessed => 1;
 
 get '/listnodes' => sub {
     my %nodelist = get_all_nodes();
@@ -42,6 +41,12 @@ get '/test' => sub {
     my %result = set_node_properties("name", \%props);
     return { "nodes" => \%result, "propinput" => \%props };
 };
+get '/on' => sub {
+    my @nodelist = ("wd0031","wd0032","wd0033");
+    my %result = poweron_nodes("name",\@nodelist);
+    return { "result" => \%result };
+};
+
 
 get '/reboot' => sub {
     my @nodelist = ("wd0031","wd0032","wd0033");

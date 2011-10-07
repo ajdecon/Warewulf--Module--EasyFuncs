@@ -1,0 +1,4 @@
+engines:
+    JSON:
+        allow_blessed: '1'
+        convert_blessed: '1'

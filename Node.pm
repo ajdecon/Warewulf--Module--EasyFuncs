@@ -8,7 +8,7 @@ use Warewulf::ParallelCmd;
 
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes);
+@EXPORT_OK = qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes poweron_nodes poweroff_nodes power_action);
 
 # get_all_nodes
 #   Return full hash of all nodes provisioned by Warewulf.
@@ -101,10 +101,53 @@ sub set_node_properties {
     return nodes_hash($nodeSet);
 }
 
+# poweroff_nodes
+sub poweroff_nodes {
+    my $lookup = shift;
+    my $ref = shift;
+    my @ident;
+    if (ref($ref) eq 'ARRAY') {
+        @ident = @{$ref};
+    } else {
+        push(@ident,$ref);
+    }
+
+    return power_action($lookup,"power off",\@ident);
+}
+
+# poweron_nodes
+sub poweron_nodes {
+    my $lookup = shift;
+    my $ref = shift;
+    my @ident;
+    if (ref($ref) eq 'ARRAY') {
+        @ident = @{$ref};
+    } else {
+        push(@ident,$ref);
+    }
+
+    return power_action($lookup,"power on",\@ident);
+}
+
 # reboot_nodes
-#   ($lookup, @ident)
 sub reboot_nodes {
     my $lookup = shift;
+    my $ref = shift;
+    my @ident;
+    if (ref($ref) eq 'ARRAY') {
+        @ident = @{$ref};
+    } else {
+        push(@ident,$ref);
+    }
+
+    return power_action($lookup,"power cycle",\@ident);
+}
+
+# power_action
+#   ($lookup, $action, @ident)
+sub power_action {
+    my $lookup = shift;
+    my $action = shift;
     my $ref = shift;
     my @ident;
     if (ref($ref) eq 'ARRAY') {
@@ -120,12 +163,11 @@ sub reboot_nodes {
     $cmd->fanout(4);
     foreach my $o ($nodeSet->get_list()) {
         if (my $ipaddr = $o->get("ipmi_ipaddr") and my $username = $o->get("ipmi_username") and my $password = $o->get("ipmi_password")) {
-            $cmd->queue("ipmitool -I lan -U $username -P $password -H $ipaddr chassis power on");
-            $cmd->queue("ipmitool -I lan -U $username -P $password -H $ipaddr chassis power cycle");
-            $results{$o->get('_id')}{"status"} = "IPMI on/cycle sent";
+            $cmd->queue("ipmitool -I lan -U $username -P $password -H $ipaddr chassis $action");
+            $results{$o->get('_id')}{"status"} = "IPMI $action sent";
         } else {
             $results{$o->get('_id')}{'status'} = "error";
-            $results{$o->get('_id')}{'error'} = "Some ipmi variables not set"
+            $results{$o->get('_id')}{'error'} = "Node IPMI settings not complete";
         }
     }
     $cmd->run();
