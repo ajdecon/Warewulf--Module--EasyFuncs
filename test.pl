@@ -1,4 +1,10 @@
 
+#
+# NOT A REAL TEST HARNESS!
+#
+# This is just a little Dancer webapp I was using to dynamically test the Warewulf EasyFuncs convenience functions.
+#
+
 use Dancer;
 use Dancer::Plugin::REST;
 use Warewulf::Module::EasyFuncs::Node qw(get_all_nodes nodes_by_cluster get_nodes set_node_properties reboot_nodes poweron_nodes poweroff_nodes);
